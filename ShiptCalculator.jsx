@@ -4,6 +4,8 @@ import { useState, useCallback } from "react";
 
 interface BatchInput {
   pay: string;
+  tipEstimate: string;
+  onTimeBonus: string;
   miles: string;
   durationHours: string;
   itemCount: string;
@@ -37,13 +39,16 @@ interface WeeklyResult {
 const WEAR_TEAR_PER_MILE = 0.08;
 
 function calculateBatch(input: BatchInput, gasPerMile: number): BatchResult | null {
-  const pay = parseFloat(input.pay);
+  const basePay = parseFloat(input.pay);
+  const tip = parseFloat(input.tipEstimate) || 0;
+  const bonus = parseFloat(input.onTimeBonus) || 0;
+  const pay = basePay + tip + bonus;
   const miles = parseFloat(input.miles);
   const duration = parseFloat(input.durationHours);
   const items = parseFloat(input.itemCount);
   const stores = parseFloat(input.stores);
 
-  if ([pay, miles, duration, items, stores].some(isNaN) || duration === 0) return null;
+  if ([basePay, miles, duration, items, stores].some(isNaN) || duration === 0) return null;
 
   const totalCost = (gasPerMile + WEAR_TEAR_PER_MILE) * miles;
   const netPay = pay - totalCost;
@@ -156,7 +161,7 @@ function EffortBar({ score }: { score: number }) {
 
 export default function ShiptCalculator() {
   const [gasPerMile, setGasPerMile] = useState("0.18");
-  const [batch, setBatch] = useState<BatchInput>({ pay: "", miles: "", durationHours: "", itemCount: "", stores: "1" });
+  const [batch, setBatch] = useState<BatchInput>({ pay: "", tipEstimate: "", onTimeBonus: "", miles: "", durationHours: "", itemCount: "", stores: "1" });
   const [weekly, setWeekly] = useState<WeeklyGoals>({ targetHourly: "15", hoursPerDay: "4", daysPerWeek: "5" });
   const [activeTab, setActiveTab] = useState<"batch" | "weekly">("batch");
 
@@ -225,7 +230,9 @@ export default function ShiptCalculator() {
         {activeTab === "batch" && (
           <div>
             <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", padding: "20px", marginBottom: "20px" }}>
-              <InputField label="Batch pay (incl. tip estimate)" value={batch.pay} onChange={(v) => updateBatch("pay", v)} placeholder="12.50" prefix="$" />
+              <InputField label="Batch pay" value={batch.pay} onChange={(v) => updateBatch("pay", v)} placeholder="12.50" prefix="$" />
+              <InputField label="Tip estimate" value={batch.tipEstimate} onChange={(v) => updateBatch("tipEstimate", v)} placeholder="0.00" prefix="$" />
+              <InputField label="On-time bonus" value={batch.onTimeBonus} onChange={(v) => updateBatch("onTimeBonus", v)} placeholder="0.00" prefix="$" />
               <InputField label="Round-trip miles" value={batch.miles} onChange={(v) => updateBatch("miles", v)} placeholder="8" />
               <InputField label="Total time (hours)" value={batch.durationHours} onChange={(v) => updateBatch("durationHours", v)} placeholder="1.5" />
               <InputField label="Number of items" value={batch.itemCount} onChange={(v) => updateBatch("itemCount", v)} placeholder="25" />
@@ -236,7 +243,7 @@ export default function ShiptCalculator() {
               <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", padding: "20px" }}>
                 <RecommendationBadge rec={batchResult.recommendation} />
                 <div style={{ marginTop: "20px" }}>
-                  <StatRow label="Gross Pay" value={`$${parseFloat(batch.pay).toFixed(2)}`} />
+                  <StatRow label="Gross Pay" value={`$${((parseFloat(batch.pay) || 0) + (parseFloat(batch.tipEstimate) || 0) + (parseFloat(batch.onTimeBonus) || 0)).toFixed(2)}`} />
                   <StatRow label="Gas + Wear Cost" value={`-$${batchResult.gasCost.toFixed(2)}`} />
                   <StatRow label="Net Pay" value={`$${batchResult.netPay.toFixed(2)}`} highlight />
                   <StatRow label="Net Hourly Rate" value={`$${batchResult.netHourlyRate.toFixed(2)}/hr`} highlight />
