@@ -87,7 +87,7 @@ Effort score (1–10) is a weighted composite of items/hour, miles/hour, and num
 
 | Setting | Default | Why |
 |---|---|---|
-| Gas cost/mile | $0.096 | 2015 Honda Civic @ $2.87/gal ÷ 30 MPG |
+| Gas cost/mile | $0.096 | Standard Toyota @ $2.87/gal ÷ 30 MPG |
 | Wear & tear/mile | $0.08 | Conservative estimate, auto-applied |
 | Target hourly | $15/hr | Adjust to your needs |
 | Min net pay | $10 | Adjust to your needs |
